@@ -1,0 +1,903 @@
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-664981752"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag('js', new Date());
+  gtag('config', 'AW-664981752');
+</script>
+
+
+<script type="text/javascript"> 
+function grabUTMTerm() {
+    var cookie = document.cookie;
+    var source = cookie.split(`%22%2C%22%24`).join(',').split('%3F').join(',').split('; ').join(',').split(',');
+    for (i = 0; i < source.length; i++) {
+      source[i] = source[i].split(`%22%3A%20%22`);
+    }
+
+    for (i = 0; i < source.length; i++) {
+      if (source[i][0].includes("utm_term")) {
+        let utmData = source[i][0].split('%22%2C%22')
+        for (b = 0; b < utmData.length; b++) {
+          if (utmData[b].includes("utm_term")) {
+            let utmTermData = utmData[b].split('%22%3A%22')
+            utmTerm = utmTermData[1].replace('%22%7D', '')
+
+            return utmTerm
+          }
+        }
+      }
+    }
+  }
+
+  function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&");
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      if (pair[0] == variable) {
+        return pair[1];
+      }
+    }
+    return ("");
+  }
+
+  var userIP = "0.0.0.0"
+  var userUAG = "Unknown"
+
+  // Get and store userip/uag clientside
+  /*
+  $.get('https://www.cloudflare.com/cdn-cgi/trace', function (data) {
+    var vars = data.split("n");
+    for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split("=");
+      if (pair[0] == "ip") {
+        userIP = pair[1]
+      } else if (pair[0] == "uag") {
+        userUAG = pair[1]
+      }
+    }
+  })
+  */
+  var sr22 = getQueryVariable("sr22");
+  var zipcode = getQueryVariable("zip");
+  var deviceType = 1
+  if (window.matchMedia("only screen and (max-width: 600px)").matches) {
+    deviceType = 2
+  } else {
+    deviceType = 1
+  }
+
+  var utmTerm = grabUTMTerm()
+
+
+/*
+  function showResults_militaryTable(age, homeowner, insured, currentInsurer,discount) {
+    var listings = document.getElementById('fst-product-listings')
+
+    var loopLength = militaryPartners.length
+
+    for (var results = 0; results < loopLength; results++) { // Show our own table
+      let partnerName = militaryPartners[0].name
+
+      if (partnerName != currentInsurer) {
+        var partnerId = militaryPartners[0].id
+
+        productListing = document.getElementById(partnerId).innerHTML
+
+        listings.innerHTML += productListing
+      }
+
+      militaryPartners.shift()
+    }
+  }
+*/
+
+
+
+
+
+  // Sort partners based on num
+  function compare(a, b) {
+    if ( a.num < b.num ){
+      return -1;
+    }
+    if ( a.num > b.num ){
+      return 1;
+    }
+    return 0;
+  }
+
+  // For when we need to just show our table
+  function showResults_table() {
+
+    // Add 100 to each num, then reduce result if there is a split for the for partners with the same number
+    // This does not work correctly now if there are more than 2 partners with the same num
+    for (i = 0; i < partners.length; i++ ) {
+      partners[i].num = partners[i].num + Math.random();
+    }
+
+    partners.sort(compare);
+
+    var listings = document.getElementById('engine-product-listings');
+    var filteredListings = [];
+    var currentListings = 0
+
+
+    for (var results = 0; results < partners.length; results++) { // Show our own table
+      let partner = partners[results];
+    
+      if (partner.filterOut === false && currentListings <4) {
+        filteredListings += listings.children[partner.id].innerHTML;
+         currentListings++;
+
+      } else {
+        console.log('Filtered Out: ' + partner.name);
+      }
+    }
+    document.getElementById('engine-product-listings').innerHTML = filteredListings;
+  }
+
+
+  function bypassLazyLoad() {
+    var customProductListings = document.getElementsByClassName("engine-product-listing-image")
+
+    for (var a = 0; a < customProductListings.length; a++) {
+      var imageSrc = customProductListings[a].getAttribute("data-src")
+      customProductListings[a].src = imageSrc
+    }
+  }
+
+
+  function filter_finderTable(name, value) {
+    for (var a = 0; a < partners.length; a++) {
+      if (partners[a].name == name) {
+        if (partners[a].num < value) {
+          partners.splice(a, 1)
+        }
+      }
+    }
+  }
+
+  
+  function removeLoader() {
+    document.getElementById('loader-text').style.display = "none";
+  }
+
+
+  var city, state
+  // Filter out partners based on zipcode
+  function applyStateFilter(state) {
+    var filterOutPartnerById = [];
+    for (var partnerNum = 0; partnerNum < partners.length; partnerNum++) {
+      //console.log("State match check for `" + state + "`: " + partners[partnerNum].name + " | " + partners[partnerNum].geoFilter)
+      if (partners[partnerNum].geoFilter != undefined) {
+        for (filterNum = 0; filterNum < partners[partnerNum].geoFilter.length; filterNum++) { // Filter through filter list          
+          if (partners[partnerNum].geoFilter[filterNum] == state) {
+            partners[partnerNum].filterOut = true;
+          }
+        }
+      }
+    }
+  }
+
+
+  function applyDiscountsFilter(partnerNum) {
+    var filterOutPartnerById = [];
+    if (partners[partnerNum].discountsFilter != undefined) {
+      for (filterNum = 0; filterNum < partners[partnerNum].discountsFilter.length; filterNum++) { // Filter through filter list          
+        for (var answeredResult in answeredResults) {
+          if (partners[partnerNum].discountsFilter[filterNum] === answeredResult
+            && answeredResults[answeredResult] === true) {
+            partners[partnerNum].filterOut = true;
+          }
+        }
+      }
+    }
+  }
+
+
+  // Filter out partners based on answers
+  function filterPartners() {
+    for (var partnerNum = 0; partnerNum < partners.length; partnerNum++) {
+      if (partners[partnerNum].filters != null) {
+        for (filterNum = 0; filterNum < partners[partnerNum].filters.length; filterNum++) { // Filter through filter list
+          for (filterAns = 0; filterAns < partners[partnerNum].filters[filterNum].length; filterAns++) { // Filter through exact filter
+            if (partners[partnerNum].filters[filterNum][filterAns] == answeredResults[questions[filterNum]["name"]]) {
+              partners[partnerNum].filterOut = true;
+            }
+          }
+        }
+        applyDiscountsFilter(partnerNum);  
+      }
+    }
+  }
+
+
+  // Filter and show the user our listings
+  function updateResults() {
+    // Filter internal parters based on answers
+    filterPartners();
+
+    document.getElementById('loader').style.display = "block";
+    //document.getElementById('loader-text').style.display = "block";
+
+
+    //document.getElementById('sub-header').style.display = "none"
+    //document.getElementById('sub-header').style.opacity = "0"
+
+    bypassLazyLoad()
+
+    let homeowner = answeredResults["homeowner"]
+    let age = answeredResults["age"]
+
+    let currentInsurer = answeredResults["currentInsurer"]
+
+    let insured
+    if (currentInsurer == "None") {
+      insured = 0
+    } else {
+      insured = 1
+    }
+    
+
+    //let military = answeredResults["military"]
+
+    // Show our table
+    showResults_table()
+
+    setTimeout(function () {
+      document.getElementById('main-header').style.opacity = "0"
+      document.getElementById('loader').style.opacity = "0";
+
+      setTimeout(function () {
+        document.getElementById('loader').style.display = "none";
+        document.getElementById('main-header').style.display = "block";
+
+        document.getElementById('main-header').style.textAlign = "center"
+        document.getElementById('sub-header').style.textAlign = "center"
+
+        document.getElementById('main-header').style.opacity = "1"
+        document.getElementById('sub-header').style.opacity = "1"
+
+
+
+        var newHeader = "Based on your responses here are the options that we consider fit your profile"
+
+        if (state != undefined) {
+          newHeader += " living in " + city + ", " + state
+        }
+        newHeader += "."
+
+        document.getElementById('main-header').innerHTML = newHeader
+        document.getElementById('sub-header').innerHTML =
+          "Compare quotes from at least 2 to 3 of these top companies to save up to 40% on your car insurance."
+
+      document.getElementById("engine-product-listings").style.display= "flex";
+      document.getElementById("engine-product-listings").style.flexWrap= "nowrap";
+      document.getElementById("engine-product-listings").style.opacity = "1";
+      document.getElementById("engine-wrap").style.paddingBottom= "10px;";
+      document.getElementById("compare-more").style.display= "block";
+
+
+      }, 500)
+    }, 600)
+  }
+
+  function updatePage() {
+    if (zipcode != "") {
+      var endpoint =
+        "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyBghuwd0spM5SHvVAvQGct9DdIbcXIMlAo&address=" +
+        zipcode
+
+
+      $.getJSON(endpoint, function (response) {
+        //find the city and state
+        var address_components = response.results[0].address_components;
+        $.each(address_components, function (index, component) {
+          var types = component.types;
+          $.each(types, function (index, type) {
+            if (type == 'political' & city == undefined) {
+              city = component.long_name;
+            }
+            if (type == 'administrative_area_level_1') {
+              state = component.short_name;
+            }
+          });
+        });
+
+        applyStateFilter(state)
+
+        document.getElementById('main-header').innerHTML =
+          "Finding the best cheap car insurance rates for you in " + city + "."
+      });
+    }
+  }
+
+
+  function listingSelected(gotoUrl) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Finder Broker Engine',
+      eventAction: "Converted",
+      eventLabel: gotoUrl,
+    });
+
+    var callback = function () {
+      if (typeof (url) != 'undefined') {
+        window.location = url;
+      }
+    };
+
+    gtag('event', 'conversion', {
+      'send_to': 'AW-664981752/LdIOCO_s4MQBEPihi70C',
+      'event_callback': callback
+    });
+
+    adnetTracking(12)
+
+    window.open(gotoUrl)
+  }
+
+  function tableListingSelected(gotoUrl) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Finder Broker Engine',
+      eventAction: "Converted - Table",
+      eventLabel: gotoUrl,
+    });
+
+    adnetTracking(18)
+
+    window.open(gotoUrl)
+  }
+
+  function phoneCallSelected(gotoUrl) {
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Finder Broker Engine',
+      eventAction: "Converted - Phone",
+      eventLabel: gotoUrl,
+    })
+
+    var callback = function () {
+      if (typeof (url) != 'undefined') {
+        window.location = url;
+      }
+    };
+
+    gtag('event', 'conversion', {
+      'send_to': 'AW-664981752/LdIOCO_s4MQBEPihi70C',
+      'event_callback': callback
+    });
+
+    adnetTracking(6)
+  }
+
+  updatePage()
+</script>
+
+<!-- CONVERSION START -->
+
+<script>
+  function adnetTracking(dollarWorth) {
+    if (typeof String.prototype.trim !== 'function') {
+      String.prototype.trim = function () {
+        return this.replace(/^s+|s+$/g, '');
+      }
+    };
+    var ac = document.cookie;
+    var key = "";
+    var val = "";
+    ca = ac.split(';');
+    for (var i = 0; i < ca.length; i++) {
+      key = ca[i].split('=')[0];
+      key = key.trim();
+      if (key === "anid") val = ca[i].split('=')[1];
+    }
+    if (val === "" && window.name.indexOf("anid=") === 0) {
+      val = window.name.split("anid=")[1];
+    }
+    var up = (location.protocol == 'https:' ? 'https://securetracking.adsprotection.com' :
+      'http://tracking.adsprotection.com');
+
+    var dollarsWorth = "'" + dollarWorth + "'";
+
+    var theUrl = up + "/cpa-img-track.php?a=-5491207340844192877~6336809093762597619&adnet_track=" + val +
+      "&ev=Leads&dw=" + dollarsWorth;
+    console && console.log("calling server at = " + theUrl);
+    var img = document.createElement("img");
+    img.src = theUrl;
+    img.setAttribute("height", "1");
+    img.setAttribute("width", "1");
+    var src = document.getElementsByTagName("BODY")[0];
+    src.appendChild(img);
+  }
+</script>
+
+<!-- CONVERSION END -->
+
+
+
+
+
+
+
+<style>
+.checkb { padding-left: 200px;
+}
+.custom-width {
+max-width:60rem;
+}
+
+
+.footer {
+display: none;
+}
+
+.header-navbar__features {
+display: none;
+}
+
+.mAdGoBtnText {
+color: #fff !important;
+text-decoration: none;
+}
+
+#max-partners table td {
+vertical-align: top !important;
+}
+
+.top-sub-header { 
+ font-size:22px !important;
+ color: #505050;
+}
+
+@media(max-width: 600px) {
+.max-ad-images {
+text-align:center;
+}
+
+#max-partners table td {
+display:block;
+margin: 0 auto;
+}
+
+.top-sub-header{
+ margin-top:15px !important;
+}
+
+.media-alpha-wrapper {
+margin-top:15px !important;
+}
+
+.engine-phone-number {
+ text-align: center;
+}
+
+.partnered-list {
+ 
+}
+}
+</style>
+
+<style>
+.loader {
+    border: 9px dotted #1591fe;
+    border-top: 9px solid #1591fe;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s ease-in-out infinite;
+    margin: 60px auto;
+   display: none;
+}
+
+.t_table {
+border: 0 !important;
+}
+
+.tablesorter-headerRow {
+display: none;
+}
+</style>
+
+
+
+<style>
+.custom-width {
+max-width:60rem;
+}
+
+.header-sitewide__search {
+display: none;
+}
+
+#respond {
+display:none;
+}
+
+.well {
+display:none !important;
+}
+
+.media-alpha-wrapper {
+text-align:center;
+margin-top: 30px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#new-filter {
+display: none !important;
+}
+
+.load-media-alpha {
+margin-top:30px;
+margin-bottom: 20px;
+display: none;
+}
+
+/*
+.sub-header {
+margin-top: 1em;
+opacity: 0;
+display:none;
+transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out; 
+    -o-transition: opacity 0.5s ease-out; 
+    -webkit-transition: opacity 0.5s ease-out; 
+    -ms-transition: opacity 0.5s ease-out;
+color: #505050;
+font-weight:300;
+font-size:28px;
+text-align:center;
+margin-top:30px;
+*/
+}
+</style>
+
+<style>
+[role=navigation] {
+display: none !important;
+}
+
+.custom-width {
+max-width:60rem;
+margin: 0 auto;
+}
+
+.authorBox {
+display: none;
+}
+</style>
+
+<style>
+.main-header {
+   color: #fff;
+   text-align: center;
+   font-weight: 200;
+   padding-top: 1.5em;
+   transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out; 
+    -o-transition: opacity 0.5s ease-out; 
+    -webkit-transition: opacity 0.5s ease-out; 
+    -ms-transition: opacity 0.5s ease-out;
+}
+
+.sub-header {
+   font-size: 1.1em;
+   margin-bottom: 1.8em;
+   font-weight: 100;
+   transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out; 
+    -o-transition: opacity 0.5s ease-out; 
+    -webkit-transition: opacity 0.5s ease-out; 
+    -ms-transition: opacity 0.5s ease-out;
+  color: #fff;
+   text-align: center;
+}
+
+@media (min-width: 799px) {
+.form-body {
+min-height: 500px;
+}
+}
+
+.question-field {
+  padding-bottom: 10px;
+  transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out; 
+      -o-transition: all 0.2s ease-out;  
+      -webkit-transition: all 0.2s ease-out;
+padding-left:150px;
+}
+
+.question-title {
+  font-weight: 100;
+  color: #fff;
+  font-size: 2rem;
+  text-align: center;
+  margin-top: 5rem !important;
+}
+
+.engine-product-listing {
+  padding: 25px;
+}
+
+/*.engine-product-listing:not(:last-child) {
+  border-bottom: 1px solid #505050;
+}*/
+
+.engine-product-listing:hover {
+  cursor: pointer
+}
+.engine-product-listing-image {
+
+}
+.engine-product-listing-button{
+  width: 100%;
+  margin-top: 10px;
+}
+</style>
+
+<style>
+#answer-items {
+list-style-type: none;
+margin-left: 0;
+border-spacing: .4em;
+}
+
+#answer-items li {
+padding: 12px 20px;
+min-width: 45px;
+cursor: pointer;
+text-align: center;
+color: #fff;
+border: 1px solid #fff;
+margin-bottom: .5em;
+}
+
+@media(min-width: 601px) {
+#answer-items {
+ display: table;
+  margin: 0 auto;
+}
+
+#answer-items li {
+display: table-cell;
+}
+
+#answer-items li:hover {
+color: #1f48b9;
+border: 1px solid;
+background: #fff;
+}
+
+.question-field {
+}
+}
+
+.engine-product-listings {
+transition: opacity 0.5s ease-out;
+  -moz-transition: opacity 0.5s ease-out; 
+    -o-transition: opacity 0.5s ease-out; 
+    -webkit-transition: opacity 0.5s ease-out; 
+    -ms-transition: opacity 0.5s ease-out;
+
+.engine-product-listings {
+  display: block;
+  flex-wrap: nowrap; 
+  overflow: auto;
+}
+
+}
+.engine-product-listing:hover {
+border: 1px solid #1591fe;
+outline: 1px solid #1591fe;
+transition: all .2s;
+}
+</style>
+
+<style>
+.noUi-connect {
+background: #fff;
+border-radius: 30px;
+}
+.noUi-target {
+border-radius: 30px;
+}
+
+.noUi-horizontal {
+height: 26px;
+}
+
+.noUi-handle {
+height: 34px !important;
+}
+
+.noUi-handle:after, .noUi-handle:before {
+height: 20px;
+}
+
+.noUi-base {
+ background: #2152c3; 
+ border-radius: 30px;
+}
+</style>
+
+<style>
+body {
+}
+
+.sliderText {
+margin-top: 2rem;
+ margin-bottom: 1rem;
+ text-align: center;
+ font-size: 3rem;
+ color: #fff;
+}
+
+.engine-wrap {
+background: linear-gradient(135deg, #165deb 10%, #276ddf 37%, #1c3eae 90%);
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+padding: 1rem 1rem 4rem;
+padding-bottom: 160px;
+padding-left
+}
+
+
+.custom-width{
+  display: flex;
+  flex-wrap: wrap; 
+  overflow: auto;
+}
+
+
+
+@media (max-width: 750px) {
+.engine-wrap {
+  margin: -.5rem;
+padding-bottom: 320px;
+}
+
+.custom-width{
+  display: flex;
+  flex-wrap: nowrap; 
+  overflow: auto;
+}
+
+#ribbon-offers{
+display:none;
+}
+
+.checkb {
+ padding-left: 0px;
+}
+
+.question-field{
+padding-left:0px;
+}
+}
+.continueButton {
+ border: 1px solid #fff;
+ text-align: center;
+ color: #fff;
+ padding: 9px;
+ max-width: 400px;
+ margin: 0 auto;
+ border-radius: 30px;
+ margin-top: 30px;
+}
+
+.continueButton:hover {
+cursor: pointer;
+background: #fff;
+color: #1f48b9;
+}
+</style>
+<style>
+li{
+ background-color:white;
+ color: #0677da !important;
+ border-radius : 30px;
+ font-weight: bold;
+}
+
+.luna-toggle__input:checked+.luna-toggle__label::after{
+background: #038500;
+}
+
+.luna-toggle__input:checked+.luna-toggle__label{
+background: #81d068;
+}
+
+.luna-toggle__text{
+color: white;
+text-size: 1.2em;
+font-weight: bold;
+}
+
+.luna-button--ghost {
+    background: white;
+    border-radius : 30px;
+}
+
+.luna-button--ghost:hover {
+color: white;
+}
+
+h4{
+  line-height: 1.6;
+}
+
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 180px;
+  background-color: white;
+  color: #0677DA;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  border-color: #FA8643;
+  border-width: 1px;
+  border-style: solid;
+
+  /* Position the tooltip */
+
+  position: absolute;
+ z-index: 1;
+  width: 220px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -180px; /* Use half of the width (180/2 = 90), to center the tooltip */
+  
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.luna-icon{
+fill: white;
+}
+
+.container {
+  width: 100%;
+  height: auto;
+  white-space: nowrap;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.flex {
+  display: flex;
+  flex-wrap: nowrap; 
+  overflow: auto;
+}
+.flex-item {
+  flex: 0 0 auto;
+}
+
+#compare-more{
+color: white !important;
+}
+
+
+
+
+
+</style>

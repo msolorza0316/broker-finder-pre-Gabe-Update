@@ -1,0 +1,381 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<script>
+var curQ = 0
+var locked = false
+var answeredResults = []
+var savedAnswered= []
+
+var partners = [
+
+
+        {
+             name: 'Sofi',
+             id: 'sofi-table',
+             num: 2,
+             filterOut: false,
+      discountsFilter: ["Options", "Mutual Funds"],
+             filters: [
+              ["Broker"], [],[], [],[]
+             ],
+	},
+     	{
+             name: 'Betterment',
+             id: 'betterment-table',
+             num: 2,
+             filterOut: false,
+      discountsFilter: ["Stocks","Cryptocurrency","Options","Mutual funds"],
+             filters: [
+             	["Myself"], ["Longer than 3 years"], [], ["Detailed data","Choice of investment types"]
+             ],
+	},
+	{
+             name: 'FirstTrade',
+             id: 'firstTrade-table',
+             num: 3,
+             filterOut: false,
+      discountsFilter: ["Stocks","ETF's","Options","Mutual funds",],
+             filters: [
+              ["Broker"], ["Less than a year","1-3 years"], [] , ["Detailed data","Choice of investment types", "An easy to use platform"]
+             ]
+	},
+	  {
+             name: 'Robinhood',
+             id: 'robinhood-table',
+             num: 1,
+             filterOut: false,
+      discountsFilter: ["Mutual funds"],
+             filters: [
+              ["Broker"], ["Longer than 3 years"],[], []
+             ]
+	},
+	
+	{
+             name: 'Acorns',
+             id: 'acorns-table',
+             num: 4,
+             filterOut: false,
+      discountsFilter: ["Cryptocurrency","Options",,"Mutual funds"],
+             filters: [
+              ["Myself"], ["1-3 years"],["Trade and profit now"], [],[]
+       ]
+	},
+
+
+	{
+             name: 'moomoo',
+             id: 'moomoo-table',
+             num: 5,
+             filterOut: false,
+      discountsFilter: ["ETF's","Cryptocurrency","Mutual funds"],
+             filters: [
+              ["Broker"],  ["Longer than 3 years"],[], [],["Choice of investment types"]
+      ]
+	},
+
+	{
+             name: 'tastyworks',
+             id: 'tastyworks-table',
+             num: 6,
+             filterOut: false,
+      discountsFilter: ["Options",,"Mutual funds"],
+             filters: [
+              ["Myself"],["Less than a year"],[], [],["An easy to use platform"]
+             ]
+	},
+
+	{
+             name: 'vanguard',
+             id: 'vanguard-table',
+             num: 7,
+             filterOut: false,
+      discountsFilter: ["Cryptocurrency"],
+             filters: [
+              ["Myself"],["Less than a year"],[], [],["Vanguard"]
+             ]
+	},
+
+	{
+             name: 'webull',
+             id: 'webull-table',
+             num: 8,
+             filterOut: false,
+      discountsFilter: ["Cryptocurrency","Options","Mutual funds"],
+             filters: [
+              ["Broker"], [],[], [],[]
+             ]
+	},
+
+]
+
+
+
+ var questions = [
+      {
+        "question": "Which of these do you want to trade?",
+        "selection": true,
+        "answers": [
+            "Stocks",
+            "ETF's",
+            "Cryptocurrency",
+            "Options",
+            "Mutual funds",
+        ],
+        "answersValue": [
+            "Stocks",
+            "ETFs",
+            "Cryptocurrency",
+            "Options",
+            "Mutual funds",
+        ],
+        "description": [
+               "A small share of ownership of a company.",
+                "Exchange-traded funds trade like stocks but work like mutual funds, owning baskets of stocks or other assets usually tied to a stock index or the price of its asset.",
+               "Digital currency designed to work as a medium of exchange without management from a central authority",
+               "A contract granting the option to buy or sell shares of an asset in the future at a specific price.",
+               "A mutual fund invests in a collection of stocks or other asset to generate profit for its investors.",          
+],
+        "name": "options"
+      },
+
+  {
+        "question": "How do you want to manage your trades?",
+        "answers": [
+            "I'll manage my trades",
+            "Let broker manage trades",
+        ],
+        "answersValue": [
+            "Myself",
+            "Broker"
+        ],
+        "name": "broker manager"
+      },
+
+     {
+        "question": "How long have you been Investing?",
+        "answers": [
+            "Less than a year",
+            "1-3 years",
+            "Longer than 3 years",
+        ],
+        "answersValue": [
+            "Less than a year",
+            "1-3 years",
+            "Longer than 3 years"
+        ],
+        "name": "time investing"
+      },
+
+
+
+  {
+        "question": "What is your primary goal with investing?",
+        "answers": [
+            "Save for retirement",
+            "Trade and profit now",
+            "College saving",
+            "Other",
+        ],
+        "answersValue": [
+            "Save for retirement",
+            "Trade and profit now",
+            "College saving",
+            "Other",
+        ],
+        "name": "primary goal"
+      },
+
+  {
+        "question": "What is most important for you in a broker?",
+        "answers": [
+            "No fee trading",
+            "Detailed data",
+            "An easy to use platform",
+            "Choice of investment types",
+        ],
+        "answersValue": [
+            "No fee trading",
+            "Detailed data",
+            "An easy to use platform",
+            "Choice of investment types",
+        ],
+        "name": "broker feature"
+      },
+  ]
+  
+  var questionCount = 0;
+
+
+ 
+
+
+  function answer(obj) {
+    if (!locked) {
+      locked = true
+      questionCount = questionCount + 1;
+      var num = obj.getAttribute("data-storedValue");
+      answeredResults[ questions[curQ]["name"]] = num;
+      savedAnswered[questions[curQ]["name"]] = questionCount;
+    
+      document.getElementById("question-field").style.opacity= "0";  
+    
+      ga('send', {
+        hitType: 'event',
+        eventCategory: 'Finder Broker Engine',
+        eventAction: questions[curQ]["name"],
+        eventLabel: answeredResults[ questions[curQ]["name"] ],
+      });
+    
+      curQ = curQ + 1
+ 
+      if (curQ < questions.length ) {
+        setTimeout(function() {
+          updateForm()
+        }, 200)
+      } else {
+        document.getElementById("question-field").style.display= "none";  
+      
+        updateResults()
+      }
+    }
+  }
+  
+  function answerSelection() {
+    if (!locked) {
+      locked = true;
+      var inputElements = document.getElementById('checkb').getElementsByTagName('input');
+
+      for (var i = 0; i < inputElements.length; i++) {
+        if (inputElements[i].name !== "button") {
+          questionCount = questionCount + 1;
+          if (inputElements[i].checked === true) {
+            
+            answeredResults[inputElements[i].value] = inputElements[i].checked;
+            savedAnswered[inputElements[i].value] = questionCount;
+            document.getElementById("question-field").style.opacity= "0"; 
+
+            ga('send', {
+              hitType: 'event',
+              eventCategory: 'Finder Broker Engine',
+              eventAction: questions[curQ]["name"],
+              eventLabel: inputElements[i].value,
+            });
+          }
+        }
+      }
+
+      curQ = curQ + 1
+      if (curQ < questions.length ) {
+        setTimeout(function() {
+          updateForm()
+        }, 200)
+      } else {
+        document.getElementById("question-field").style.display= "none";  
+        updateResults();
+      }
+    }
+  }
+
+
+  function updateForm() {
+      
+    var finisher = "";
+    var buttonText = "Continue";
+    if (curQ == questions.length - 1) {
+      finisher = "Last question.";
+      var buttonText = "Continue";
+    } else if (curQ != 0) {
+      finisher = "";
+    } else {
+      finisher = "";
+    }
+
+    if (questions[curQ]["selection"] === true) {
+
+      document.getElementById('question-title').innerHTML = questions[curQ]["question"];
+      var htmlString = "";
+      
+      htmlCheckboxString = "";
+
+      for (i = 0; i < questions[curQ]["answers"].length; i++) {
+        htmlCheckboxString += `<div class="luna-toggle" style="margin: 1em 0">
+          <input class="luna-toggle__input" type="checkbox" data-storedValue="${questions[curQ]["answersValue"][i]}" id="answer-${i}" name="${questions[curQ]["answers"][i]}" value="${questions[curQ]["answersValue"][i]}">
+          <label class="luna-label luna-toggle__label" for="answer-${i}"></label>
+     
+     <span class="luna-toggle__text" for="answer-${i}"> ${questions[curQ]["answers"][i]} &nbsp <div class="tooltip"><svg class="luna-icon">
+  <use xlink:href="#info-circle"></use>
+</svg>
+<span class="tooltiptext" for="description-${i}"> ${questions[curQ]["description"][i]}</span>
+</div>
+
+</span>
+          </div>`;
+      }
+
+      htmlString = `
+          <div id="checkb" class="checkb">${htmlCheckboxString}
+          <button class="luna-button luna-button--primary luna-button--ghost luna-button--large"  onclick="answerSelection(this)" name="button">${buttonText}</button></div>
+        `;
+
+    } else {
+      document.getElementById('question-title').innerHTML = questions[curQ]["question"];
+      var htmlString = "<ul id='answer-items'>";
+
+      for (a = 0; a < questions[ curQ ]["answers"].length; a++) {
+          var customVal = a;
+          htmlString = htmlString + '<li id="answer-' + a + '" data-storedValue="' + questions[ curQ ][ "answersValue" ][ a ] + '" onclick="answer(this)">' + questions[ curQ ]["answers"][a] + '</li>';
+      }
+  
+      htmlString = htmlString + "</ul>";
+    }
+
+
+
+    document.getElementById('question-answers').innerHTML = htmlString;
+    document.getElementById("question-field").style.opacity= "1";
+    document.getElementById("sub-header").innerHTML = "Question " + (curQ+1) + " of " + questions.length + ". " + finisher;
+
+    locked = false
+  }
+  
+  function requestZipCode() {
+    document.getElementById('question-title').innerHTML = "What is your zip code?"
+       
+      var htmlString = "<ul id='answer-items'>"
+  
+      document.getElementById('question-answers').innerHTML = '<input id="zip" name="zip" class="luna-input ma-right mobile-header-cta" style="text-align: center; padding: 20px;" type="text" placeholder="Enter your ZIP code" />'
+      document.getElementById("question-field").style.opacity= "1";
+      document.getElementById("sub-header").innerHTML = ""
+  
+      locked = false
+  }
+  
+  if (zipcode == "") {
+    console.log("Empty zip code")
+  
+    updateForm()
+  } else {
+    updateForm()
+  }
+  
+   ga('send', {
+      hitType: 'event',
+    eventCategory: 'Finder Broker Engine',
+      eventAction: "Loaded",
+      eventLabel: deviceType,
+    });
+  </script>
+  
+  <script type="application/javascript">(function(w,d,t,r,u){w[u]=w[u]||[];w[u].push({'projectId':'10000','properties':{'pixelId':'10100838'}});var s=d.createElement(t);s.src=r;s.async=true;s.onload=s.onreadystatechange=function(){var y,rs=this.readyState,c=w[u];if(rs&&rs!="complete"&&rs!="loaded"){return}try{y=YAHOO.ywa.I13N.fireBeacon;w[u]=[];w[u].push=function(p){y([p])};y(c)}catch(e){}};var scr=d.getElementsByTagName(t)[0],par=scr.parentNode;par.insertBefore(s,scr)})(window,document,"script","https://s.yimg.com/wi/ytc.js","dotq");</script>
+  <script type="application/javascript">
+    window.dotq = window.dotq || [];
+    window.dotq.push(
+    {
+      'projectId': '10000',
+      'properties': {
+        'pixelId': '10100838',
+        'qstrings': {
+          'et': 'custom',
+          'ec': 'getquote'
+     }
+    } } );
+ </script>
